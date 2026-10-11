@@ -15,15 +15,29 @@ Legend: ✅ done · 🔨 in progress · ⬜ not started
 - ✅ Smoke test with that client (2026-10-11): an admin account created in the server window, logged in, character in the Raza Inn, account kept in the save
 - ✅ `origin` remote on GitHub: [jboullion/meridian-shards-server](https://github.com/jboullion/meridian-shards-server)
 
-## Phase 2: Protocol audit and client rulesets
+## Phase 2: Protocol audit and client migration
 
-- ⬜ [protocol-dialect.md](protocol-dialect.md): full `original` vs `server104` audit. It covers message ids, every differing `AddPacket` site, the C-side packets (`synched.c`, `game.c`, `commcli.c`), client versions and resync behaviour.
-- ⬜ The Shards protocol version announced at login (ADR)
-- ⬜ Client ruleset layer (in the client repos):
-  - The `server104` profile first, with no behaviour change
-  - Then `original`, then `shards`
-- ⬜ Per-ruleset data in the clients (rules, derived JSON) and per-server asset namespaces
-- ⬜ Gateway: per-server targets (`/ws/104`, `/ws/shards`); `servers.json` entries carry a `ruleset`
+Two rulesets, `original` and `shards`, and no `server104` ([ADR 0003](adr/0003-two-rulesets.md)).
+
+- ✅ [protocol-dialect.md](protocol-dialect.md): `original` vs Server 104 audit (2026-10-11), now the clients' migration guide. Not done: a value-by-value audit of every enum Kod sends.
+- ✅ The Shards protocol version announced at login: `AP_SHARDS_INFO = 60`, Shards protocol 1 ([ADR 0002](adr/0002-protocol-version.md), 2026-10-11). Checked with `tools/login-check.py` and upstream's Windows client, which ignores it.
+- ⬜ Tag a last 104-capable release of each client (browser, Unreal) for play on Server 104 until Shards is hosted
+- ⬜ Migrate each client from 104 to `original` (in the client repos), per the migration guide:
+  - the packed object descriptor and flags, plus rarity
+  - the player-list entry
+  - `UC_SAFETY` instead of preferences
+  - plain-string `UC_LOOK_PLAYER` fixed text
+  - no skill school byte in `BP_CHARINFO`
+  - list `BP_REQ_DROP` and WORD `BP_REQ_INVENTORY_MOVE`
+  - no secret key in `AP_LOGIN`
+  - `BP_REQ_GET_FROM_CONTAINER = 239`
+  - RSC v4 and ROO v12/13 readers
+  - school and stat-group values
+  - then delete the 104-only paths
+- ⬜ The `shards` ruleset in the clients: `original` plus version-gated changes, read from `AP_SHARDS_INFO`
+- ⬜ Client data and assets from this server's build: rules, derived JSON (browser `roomlinks`/`itemslots`/`spelltimes`, Unreal `extract.py`), `rsc0000.rsb` and rooms
+- ✅ Art: permission confirmed (2026-10-11), provided the client and server stay open source and the art is never committed to a repo
+- ⬜ Gateway and `servers.json` point at the Shards server (port 5960)
 
 ## Phase 3: Clean-slate modernization (Shards v0.x)
 
@@ -38,11 +52,22 @@ Legend: ✅ done · 🔨 in progress · ⬜ not started
 - ⬜ Logs to stdout under Docker; Kod runtime errors counted and shown on the maintenance port
 - ⬜ Kod test harness in `tools/testbench/` (adapted from the 104 `claude-testbench`), plus a smoke test
 - ⬜ CI: Docker build plus smoke test, beside upstream's `c-cpp.yml`
-- ⬜ Hosting beside the 104 stack, with a gateway route and our own `/assets`
+- ⬜ Hosting: beside the 104 stack at first, with a gateway route and our own `/assets`. Then replace 104 as the browser's hosted world: a fresh world, announced to its players.
 - ⬜ Branding: server name, MOTD, welcome text. Kod still says "new to the lands of Meridian 59" in player descriptions, and `help` points at upstream's web pages.
 
-## Phase 4: The Server 104 upgrade (Shards v1.0)
+## Phase 4: Server 104 features, the Shards way (Shards v1.0)
 
-- ⬜ `server104-features.md`: a catalog of what 104 adds (Kod, the 36 extra built-ins, rooms); the user marks each feature keep or skip
-- ⬜ Port the chosen features one at a time: built-ins, then Kod, then rooms and resources; update `protocol-dialect.md` and the clients' `shards` profile
+104 is a design reference, not code to merge ([ADR 0003](adr/0003-two-rulesets.md)).
+
+- ⬜ `server104-features.md`: a catalog of what 104 adds (Kod, the 36 extra built-ins, rooms); the user marks each feature keep or skip. Wanted so far:
+  - weapon tiers (likely on upstream's existing rarity grade)
+  - training points and unbound energy (ordinary `BP_STAT` lines in 104, so Kod-only)
+- ⬜ Port each chosen feature:
+  - Kod and existing messages first
+  - protocol changes additive only and versioned in `protocol-dialect.md`
+  - C built-ins only when Kod can't do it
 - ⬜ Tag `v1.0`; new Shards features start here
+- Known porting hurdles, found in the protocol audit:
+  - **Comments:** 104 Kod uses `//` comments, which upstream's `bc` doesn't accept (`blakcomp/blakcomp.l:126-128` takes only `%`). Convert them while copying, or teach `bc` `//`.
+  - **Rooms:** 104 rooms are `.roo` v15 (floating point), read by its own BSP loader (`blakserv/roofile.c`); ours are v12/13. Adopting v15 would be a client format change, so it needs an ADR.
+  - **Resources:** 104 resources are RSC v5 (per-language strings); ours are v4. Same rule as rooms.

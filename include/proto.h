@@ -45,6 +45,10 @@ enum {
    AP_NOCHARACTERS  = 37,
    AP_GUEST         = 38,
    AP_SERVICEREPORT = 39,
+
+   // Shards: server -> client right after AP_LOGINOK; protocol version (4), server name (string).
+   // Clients that don't know it ignore it (docs/adr/0002-protocol-version.md).
+   AP_SHARDS_INFO   = 60,
 };
 
 

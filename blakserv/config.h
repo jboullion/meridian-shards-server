@@ -107,6 +107,10 @@ enum
    WEBHOOK_GROUP,
    WEBHOOK_ENABLED, WEBHOOK_PREFIX,
 
+   // Shards: settings for our additions
+   SHARDS_GROUP,
+   SHARDS_SERVER_NAME,
+
    NUM_CONFIG_VALUES
 };
 

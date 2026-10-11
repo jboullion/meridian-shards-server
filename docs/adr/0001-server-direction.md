@@ -51,18 +51,21 @@ The two share a lineage, so 104 features can be merged rather than re-implemente
 
 1. **Same stack forever.** Shards runs `blakserv` and Kod. We do not port to Rust, Go or anything else, and we do not rewrite or transpile Kod. Gaps are fixed in place: new built-ins in `blakserv/ccode.c`, tools, and save and security work.
 2. **Clean slate from upstream.** This repo is a git fork of [Meridian59/Meridian59](https://github.com/Meridian59/Meridian59) with `upstream` as a remote. We merge upstream fixes as they land, and keep our changes additive so merges stay cheap.
-3. **Server 104 features come in as the first big upgrade (v1.0),** chosen one by one from a catalog (`docs/server104-features.md`). New Shards features come after that.
-4. **Clients are not forked.** Each client gets a ruleset layer, `"original" | "server104" | "shards"`, picked per server in the login list.
-   - `original` and `server104` are treated as frozen. A profile changes only if one of those teams changes their protocol.
+3. ~~**Server 104 features come in as the first big upgrade (v1.0),** chosen one by one from a catalog (`docs/server104-features.md`). New Shards features come after that.~~
+   *Changed 2026-10-11 by [ADR 0003](0003-two-rulesets.md):* the 104 features we want are still the v1.0 upgrade, chosen from that catalog. They are ported the Shards way, though: Kod and existing messages first, protocol changes additive only, with 104 as a design reference rather than code to merge.
+4. **Clients are not forked.** ~~Each client gets a ruleset layer, `"original" | "server104" | "shards"`, picked per server in the login list.~~
+   - ~~`original` and `server104` are treated as frozen. A profile changes only if one of those teams changes their protocol.~~
    - `shards` evolves, and the server announces its protocol version at login.
    - [docs/protocol-dialect.md](../protocol-dialect.md) is the spec.
+
+   *Changed 2026-10-11 by [ADR 0003](0003-two-rulesets.md):* there are two rulesets, `original` (frozen) and `shards` (`original` plus versioned additions). There is no `server104` ruleset: each client migrates from 104 to `original` once, after tagging a last 104-capable release.
 
 ## Consequences
 
 - Gameplay work can start as soon as the server runs: it is Kod work.
 - We maintain about 30k lines of older C. Safety comes from small, reviewed changes and tests, not a rewrite.
 - Every protocol-visible change needs a `protocol-dialect.md` entry and a matching client change under the `shards` ruleset.
-- Clients carry three rulesets: one codec layer with per-feature switches, per-server assets, and per-ruleset derived data. The two frozen rulesets are one-time work.
+- ~~Clients carry three rulesets: one codec layer with per-feature switches, per-server assets, and per-ruleset derived data. The two frozen rulesets are one-time work.~~ *Changed 2026-10-11 ([ADR 0003](0003-two-rulesets.md)):* clients carry `original` plus version-gated Shards changes, and migrate off 104 once.
 - Contributors need to learn Kod. That is the one cost we can't remove.
 - `kodbase.txt` stays a build output, as upstream has it. Saves store names, not ids (`blakserv/savegame.c:143-154`).
 

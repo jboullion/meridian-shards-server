@@ -9,7 +9,7 @@ Guidance for AI coding agents (and humans who like the detail) working in this r
 - **Direction and why:** [docs/adr/0001-server-direction.md](docs/adr/0001-server-direction.md)
 - **Phases and progress:** [docs/roadmap.md](docs/roadmap.md)
 - **Running it:** [README.md](README.md) (ours) and `README` (upstream's)
-- **Clients:** [meridian-browser](E:\2026_Experiments\meridian-browser) and [meridian-unreal](E:\2026_Experiments\meridian-unreal) talk to this server through their `shards` ruleset. They also keep `server104` and `original` rulesets for other codebases.
+- **Clients:** [meridian-browser](E:\2026_Experiments\meridian-browser) and [meridian-unreal](E:\2026_Experiments\meridian-unreal). They have two rulesets, `original` and `shards` ([ADR 0003](docs/adr/0003-two-rulesets.md)). Today they still speak Server 104; [docs/protocol-dialect.md](docs/protocol-dialect.md) is their migration guide.
 
 ## Hard rules
 
@@ -23,8 +23,10 @@ Guidance for AI coding agents (and humans who like the detail) working in this r
   - When an upstream file must change, keep the diff small: no reformatting, no renames, no moving code. Leave an `// Shards:` comment where the reason isn't obvious.
   - Our own files live in `config/`, `deploy/`, `tools/` and `docs/` (ADRs, roadmap, protocol notes).
   - Pull upstream with `git fetch upstream && git merge upstream/master`.
+- **Protocol changes are additive only** ([ADR 0003](docs/adr/0003-two-rulesets.md)): new ids, or fields appended under a new Shards protocol version. Never reuse, renumber or reinterpret an existing id, field or flag bit; upstream's Windows client must keep working. Prefer Kod and existing messages over any protocol change.
 - **Every protocol-visible change goes in [docs/protocol-dialect.md](docs/protocol-dialect.md).** That covers message ids and packet layouts, including `AddPacket` changes in Kod. It is the clients' spec for the `shards` ruleset. Bump the Shards protocol version when it changes.
 - **Decisions go in ADRs** (`docs/adr/NNNN-title.md`) with Status, Date, Context, Decision, Consequences and Alternatives sections. Strike out superseded decisions with a "Changed <date>" note.
+- **Art may be served, never committed.** The original art is used with permission as long as the client and server stay open source and the art never enters a repo.
 - **No new raw art in git:** `.bgf`, `.roo`, `.rsb`, `.ogg`, `.wav`, `.bmp`, extracted PNGs. Upstream already tracks its own rooms and bitmaps; leave those as they are. New art for Shards is served from the asset build.
 - **The user makes the commits.** Don't `git commit` or push unless explicitly asked. Finish by listing the changed files.
 - **Ask before downloading or installing anything** (packages, tools, images, client builds), stating what it is, the source and the size.
@@ -56,6 +58,8 @@ Ours:
 | `tools/setup-run.cmd` | Creates `run/shards/` (git-ignored), our run folder. It reuses `run/server`'s binary, code and resources, and keeps its own config, saves and logs. |
 | `tools/maint.ps1` | Sends commands to the maintenance port. |
 | `tools/build.cmd` | Runs `nmake` (default `Bserver Bkod`) from any terminal. It finds Visual Studio with vswhere and loads `vcvars32.bat`. |
+| `tools/login-check.py` | Logs in like upstream's client and prints the login conversation, including `AP_SHARDS_INFO`. `--port`, `--user`, `--password`; by default the first account in `run/shards/test-accounts.txt`. Exits 0 when it sees `AP_SHARDS_INFO`. |
+| `include/shards.h` | `SHARDS_PROTOCOL_VERSION`. Bump it with each protocol change ([ADR 0002](docs/adr/0002-protocol-version.md)). |
 | `tools/setup-client.ps1` | Prepares upstream's client in `run/localclient` (git-ignored). It copies art from an installed client (`-ArtFolder`) and rooms from `resource/rooms`, and merges `rsc0000.rsb` from our Kod build. |
 | `deploy/` | The Linux build and hosting: `Dockerfile` (+ `Dockerfile.dockerignore`), `docker-compose.yml`, `blakserv.cfg` (forward slashes), `maint.sh` (installed as `maint` in the image). |
 | `docs/` | ADRs, the roadmap, `protocol-dialect.md`. Upstream's `webhooks.md`, `audio.md` and `themes.md` live here too. |

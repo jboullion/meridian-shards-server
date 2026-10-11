@@ -17,6 +17,7 @@
  */
 
 #include "blakserv.h"
+#include "shards.h"   // Shards: SHARDS_PROTOCOL_VERSION
 #include <sstream>
 
 /* local function prototypes */
@@ -28,6 +29,7 @@ void SynchedDoMenu(session_node *s);
 void SynchedGotoGame(session_node *s,int last_download_time);
 void SynchedSendDLFileInfo(char *str,int time,int type,int size);
 void SynchedAddDelFile(char *str);
+void SynchedSendShardsInfo(session_node *s);
 
 void SynchedInit(session_node *s)
 {
@@ -442,6 +444,9 @@ void VerifyLogin(session_node *s)
    AddByteToPacket((char)(s->account->type));
    SendPacket(s->session_id);
 
+   // Shards: announce our protocol version before anything else (ADR 0002)
+   SynchedSendShardsInfo(s);
+
    /* they're logged in now.  Check their version number, and if old tell 'em
       to update it */
 
@@ -472,6 +477,18 @@ void VerifyLogin(session_node *s)
       SynchedDoMenu(s);
    }
  
+}
+
+// Shards: AP_SHARDS_INFO tells Shards clients which protocol additions this server has
+// (docs/adr/0002-protocol-version.md). Clients that don't know the message ignore it.
+void SynchedSendShardsInfo(session_node *s)
+{
+   AddByteToPacket(AP_SHARDS_INFO);
+   AddIntToPacket(SHARDS_PROTOCOL_VERSION);
+   const char *name = LockConfigStr(SHARDS_SERVER_NAME);
+   AddStringToPacket(strlen(name),name);
+   UnlockConfigStr();
+   SendPacket(s->session_id);
 }
 
 void LogUserData(session_node *s)

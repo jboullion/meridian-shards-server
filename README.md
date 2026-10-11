@@ -4,7 +4,7 @@ Our own Meridian 59 server, built to keep the game's charm while we modernize it
 
 - **Why this shape:** [docs/adr/0001-server-direction.md](docs/adr/0001-server-direction.md)
 - **Where it's going:** [docs/roadmap.md](docs/roadmap.md)
-- **What clients must know:** [docs/protocol-dialect.md](docs/protocol-dialect.md) (the `shards` ruleset vs `original` and `server104`)
+- **What clients must know:** [docs/protocol-dialect.md](docs/protocol-dialect.md) (the `original` and `shards` rulesets, and how clients migrate off Server 104)
 - **For contributors and AI agents:** [AGENTS.md](AGENTS.md)
 
 Meridian 59 is © Andrew Kirmse and Chris Kirmse, and "Meridian" is their registered trademark. This project is unaffiliated. The code is GPLv2 (see [`LICENSE`](LICENSE)). Game art, rooms and audio are not covered by that licence.

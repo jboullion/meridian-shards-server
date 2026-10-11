@@ -210,6 +210,10 @@ config_table_type config_table[] =
 { WEBHOOK_ENABLED,        false, "Enabled",       CONFIG_BOOL,  "No" },
 { WEBHOOK_PREFIX,         false, "Prefix",        CONFIG_STR,   "" },
 
+// Shards: ServerName is sent to clients in AP_SHARDS_INFO
+{ SHARDS_GROUP,           false, "[Shards]",      CONFIG_GROUP, "" },
+{ SHARDS_SERVER_NAME,     true,  "ServerName",    CONFIG_STR,   "Meridian: Shards" },
+
 };
 
 enum
