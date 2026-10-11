@@ -54,18 +54,27 @@ Ours:
 |---|---|
 | `config/blakserv.cfg`, `config/motd.txt` | Our server config and message of the day for a Windows run. |
 | `tools/setup-run.cmd` | Creates `run/shards/` (git-ignored), our run folder. It reuses `run/server`'s binary, code and resources, and keeps its own config, saves and logs. |
-| `tools/maint.ps1` | Sends one command to the maintenance port. |
+| `tools/maint.ps1` | Sends commands to the maintenance port. |
+| `tools/build.cmd` | Runs `nmake` (default `Bserver Bkod`) from any terminal. It finds Visual Studio with vswhere and loads `vcvars32.bat`. |
+| `tools/setup-client.ps1` | Prepares upstream's client in `run/localclient` (git-ignored). It copies art from an installed client (`-ArtFolder`) and rooms from `resource/rooms`, and merges `rsc0000.rsb` from our Kod build. |
 | `deploy/` | The Linux build and hosting: `Dockerfile` (+ `Dockerfile.dockerignore`), `docker-compose.yml`, `blakserv.cfg` (forward slashes), `maint.sh` (installed as `maint` in the image). |
 | `docs/` | ADRs, the roadmap, `protocol-dialect.md`. Upstream's `webhooks.md`, `audio.md` and `themes.md` live here too. |
 
 ## Building and running
 
 ```bat
-:: Windows: from an "x86 Native Tools Command Prompt for VS 2026" (or after vcvars32.bat)
-nmake Bserver Bkod
+:: Windows, any terminal (tools\build.cmd loads the VS 2026 x86 compiler itself)
+tools\build.cmd
 tools\setup-run.cmd
 cd run\shards && ..\server\blakserv.exe
+:: The original client, with art from an installed copy
+tools\build.cmd Bclient Bmodules
+powershell -File tools\setup-client.ps1 -ArtFolder "H:\Steam\steamapps\common\Meridian 59\resource"
+cd run\localclient && meridian.exe /H:localhost /P:5960
 ```
+
+- **Never copy an installed client's `rsc0000.rsb` or rooms into `run/localclient`.** They come from someone else's build; ours must match our server.
+- **Computer use resolves `blakserv.exe` by name** and can pick the browser repo's copy. Check the path in the access request.
 
 ```bash
 # Linux in Docker (game on 5960; maintenance stays inside the container)

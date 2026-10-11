@@ -11,11 +11,9 @@ Legend: ✅ done · 🔨 in progress · ⬜ not started
 - ✅ Windows build (`nmake Bserver Bkod`, VS 2026 x86) and our run folder (`tools/setup-run.cmd` → `run/shards/`). Tested 2026-10-11: starts, answers the maintenance port, and reloads its save after `terminate save`.
 - ✅ Linux build in Docker (`deploy/`). Tested 2026-10-11: starts, reloads its save across a restart and an image rebuild, and loads a save made by the Windows build.
 - ✅ Shards config: ports 5960/9999, maintenance mask 127.0.0.1, MOTD (`config/`, `deploy/blakserv.cfg`), maintenance helpers (`tools/maint.ps1`, `deploy/maint.sh`)
-- ⬜ Smoke test with upstream's Windows client (`clientd3d`), done by the user:
-  - build it with `nmake Bclient Bmodules`, which also makes `rsc0000.rsb`
-  - it needs the game art from elsewhere
-  - log in, create a character and walk
-- ⬜ `origin` remote on GitHub (the user creates it and pushes)
+- ✅ Upstream's Windows client builds (`tools\build.cmd Bclient Bmodules`) and is set up with Steam art plus our rooms and strings (`tools\setup-client.ps1`, 2026-10-11)
+- ✅ Smoke test with that client (2026-10-11): an admin account created in the server window, logged in, character in the Raza Inn, account kept in the save
+- ✅ `origin` remote on GitHub: [jboullion/meridian-shards-server](https://github.com/jboullion/meridian-shards-server)
 
 ## Phase 2: Protocol audit and client rulesets
 
@@ -41,7 +39,7 @@ Legend: ✅ done · 🔨 in progress · ⬜ not started
 - ⬜ Kod test harness in `tools/testbench/` (adapted from the 104 `claude-testbench`), plus a smoke test
 - ⬜ CI: Docker build plus smoke test, beside upstream's `c-cpp.yml`
 - ⬜ Hosting beside the 104 stack, with a gateway route and our own `/assets`
-- ⬜ Branding: server name, MOTD, welcome text
+- ⬜ Branding: server name, MOTD, welcome text. Kod still says "new to the lands of Meridian 59" in player descriptions, and `help` points at upstream's web pages.
 
 ## Phase 4: The Server 104 upgrade (Shards v1.0)
 

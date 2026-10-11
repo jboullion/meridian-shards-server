@@ -11,16 +11,16 @@ Meridian 59 is © Andrew Kirmse and Chris Kirmse, and "Meridian" is their regist
 
 ## Run it on Windows
 
-You need Visual Studio 2026 with the C++ tools. From an "x86 Native Tools Command Prompt for VS 2026":
+You need Visual Studio 2026 with the C++ tools. Any terminal works: `tools\build.cmd` finds Visual Studio and loads its x86 compiler before running `nmake`.
 
 ```bat
-nmake Bserver Bkod
+tools\build.cmd
 tools\setup-run.cmd
 cd run\shards
 ..\server\blakserv.exe
 ```
 
-- `nmake Bserver Bkod` builds the server and the Kod into upstream's `run\server`.
+- `tools\build.cmd` runs `nmake Bserver Bkod`, which builds the server and the Kod into upstream's `run\server`. Other targets go through it too: `tools\build.cmd Bclient Bmodules`.
 - `tools\setup-run.cmd` makes our run folder, `run\shards` (git-ignored), with `config\blakserv.cfg` and `config\motd.txt`. Saves and logs live there.
 - The game listens on port **5960** and maintenance on **9999** (localhost only), so a Server 104 can run beside it on 5959/9998.
 - The first start builds a fresh world, which takes a few seconds.
@@ -40,7 +40,25 @@ powershell -File tools\maint.ps1 "show status" "who"
 powershell -File tools\maint.ps1 "terminate save"   # save and shut down
 ```
 
-After changing Kod, run `nmake Bkod`, then `reload system` on the maintenance port. That saves and reloads all Kod without a restart.
+After changing Kod, run `tools\build.cmd Bkod`, then `reload system` on the maintenance port. That saves and reloads all Kod without a restart.
+
+## Play on it with the original Windows client
+
+The repo has upstream's client source, but not the game art. Take the art from an installed client, such as the Steam one:
+
+```bat
+tools\build.cmd Bclient Bmodules
+powershell -File tools\setup-client.ps1 -ArtFolder "H:\Steam\steamapps\common\Meridian 59\resource"
+cd run\localclient
+meridian.exe /H:localhost /P:5960
+```
+
+`setup-client.ps1` fills the git-ignored `run\localclient\resource` with three things:
+- the art: `.bgf`, `.ogg`, `.wav`, `.bsf`
+- *our* rooms (`resource\rooms`)
+- an `rsc0000.rsb` merged from *our* Kod build
+
+It never copies the installed client's `rsc0000.rsb` or rooms, because those must match the server you play on. Leave the Steam install itself untouched.
 
 ## Run it on Linux (Docker)
 
