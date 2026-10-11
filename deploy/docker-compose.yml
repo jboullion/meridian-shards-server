@@ -1,0 +1,25 @@
+# The Meridian: Shards server on Linux.
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#   docker compose -f deploy/docker-compose.yml exec blakserv maint "show status"
+# Game on 5960 (a Server 104 can keep 5959). Maintenance (9999) stays inside the container.
+name: meridian-shards-server
+
+services:
+  blakserv:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: meridian-shards-server:latest
+    # A crash restarts it. A clean "terminate save" (exit 0) stays down.
+    restart: on-failure
+    ports:
+      - "5960:5960"
+    volumes:
+      - savegame:/srv/blakserv/savegame
+      - channel:/srv/blakserv/channel
+    # blakserv ignores SIGTERM (no handler in blakserv/osd_epoll.c), so `docker stop` loses
+    # everything since the last save. Shut down with: exec blakserv maint "terminate save"
+
+volumes:
+  savegame:
+  channel:

@@ -1,0 +1,31 @@
+# Context for deploy/Dockerfile (the repo root). Keep it to sources: no history,
+# no Windows build output, no run folders or savegames.
+.git
+**/debug
+**/release
+**/*.obj
+**/*.exe
+**/*.pdb
+**/*.ilk
+**/*.lib
+**/*.bof
+**/*.rsc
+**/*.rsb
+kod/kodbase.txt
+run/shards
+run/localclient
+run/server/loadkod
+run/server/rsc
+run/server/memmap
+run/server/savegame
+run/server/channel
+clientd3d
+module
+roomedit
+install
+manual
+external/openal-soft
+resource/graphics
+resource/audio
+resource/music
+resource/textures
